@@ -16,6 +16,14 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+                
+            @if(Auth::user() && Auth::user()->rol === 'admin')
+                <x-nav-link :href="route('admin.usuarios.lista')" 
+                            :active="request()->routeIs('admin.usuarios.lista')">
+                    {{ __('Usuarios') }}
+                </x-nav-link>
+            @endif
+
             </div>
 
             <!-- Settings Dropdown -->
