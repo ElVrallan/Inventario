@@ -38,14 +38,18 @@ class UserManagementController extends Controller
         return redirect()->back()->with('success', 'Usuario rechazado.');
     }
 
-public function cambiarRol(Request $request, $id)
-{
-    $usuario = User::findOrFail($id);
-    $usuario->rol = $request->rol;
-    $usuario->save();
-
-    return back()->with('success', 'Rol actualizado correctamente');
-}
+    public function cambiarRol(Request $request)
+    {
+        $roles = $request->input('roles', []);
+        foreach ($roles as $id => $rol) {
+            $usuario = \App\Models\User::find($id);
+            if ($usuario && $usuario->rol !== $rol) {
+                $usuario->rol = $rol;
+                $usuario->save();
+            }
+        }
+        return back()->with('success', 'Roles actualizados correctamente');
+    }
 
 
 }

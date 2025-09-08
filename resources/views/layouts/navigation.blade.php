@@ -11,18 +11,32 @@
                 </div>
 
                 <!-- Navigation Links -->
+                @if (
+                    url()->previous() !== url()->current() &&
+                    !request()->routeIs('dashboard')
+                )
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="url()->previous()">
+                            ← Volver
+                        </x-nav-link>
+                    </div>
+                @endif
+                
+
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
                 
-            @if(Auth::user() && Auth::user()->rol === 'admin')
-                <x-nav-link :href="route('admin.usuarios.lista')" 
-                            :active="request()->routeIs('admin.usuarios.lista')">
-                    {{ __('Usuarios') }}
-                </x-nav-link>
-            @endif
+                @if(Auth::user() && Auth::user()->rol === 'admin')
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('admin.usuarios.lista')" 
+                                    :active="request()->routeIs('admin.usuarios.lista')">
+                            {{ __('Usuarios') }}
+                        </x-nav-link>
+                    </div>
+                @endif
 
             </div>
 
