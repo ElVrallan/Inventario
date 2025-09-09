@@ -1,7 +1,7 @@
 <div class="bg-white p-6 rounded shadow mt-6">
     <h3 class="text-lg font-semibold mb-4">Cambiar Contraseña</h3>
 
-    <form method="POST" action="{{ route('profile.update-password') }}">
+    <form method="POST" action="{{ route('profile.update-password') }}" id="update-password-form">
         @csrf
         @method('PATCH')
 

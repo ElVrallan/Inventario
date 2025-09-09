@@ -1,7 +1,7 @@
 <div class="bg-white p-6 rounded shadow mt-6">
     <h3 class="text-lg font-semibold mb-4 text-red-600">Eliminar Cuenta</h3>
 
-    <form method="POST" action="{{ route('profile.destroy') }}">
+    <form method="POST" action="{{ route('profile.destroy') }}" id="delete-user-form">
         @csrf
         @method('DELETE')
 

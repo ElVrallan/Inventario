@@ -1,7 +1,7 @@
 <div class="bg-white p-6 rounded shadow">
     <h3 class="text-lg font-semibold mb-4">Actualizar Información de Perfil</h3>
 
-    <form method="POST" action="{{ route('profile.update') }}">
+    <form method="POST" action="{{ route('profile.update') }}" id="update-profile-form">
         @csrf
         @method('PATCH')
 
