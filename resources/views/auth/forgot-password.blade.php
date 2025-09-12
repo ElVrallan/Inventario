@@ -1,6 +1,13 @@
+<div class="flex items-center justify-start mt-4">
+    <a href="{{ url('/') }}" 
+       class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">
+        ← Inicio
+    </a>
+</div>
+
 <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+        {{ __('¿Olvidaste tu contraseña? No hay problema. Solo tienes que indicarnos tu dirección de correo electrónico y te enviaremos un enlace para restablecer la contraseña que te permitirá elegir una nueva.') }}
     </div>
 
     <!-- Session Status -->
@@ -18,7 +25,7 @@
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button>
-                {{ __('Email Password Reset Link') }}
+                {{ __('Enviar correo a mi Email') }}
             </x-primary-button>
         </div>
     </form>

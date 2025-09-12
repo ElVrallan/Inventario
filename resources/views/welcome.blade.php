@@ -13,7 +13,7 @@
     <div class="bg-white p-8 rounded shadow-md w-96 text-center">
         <h1 class="text-2xl font-bold mb-6">Inventario</h1>
 
-        <a href="{{ route('login') }}" class="bg-blue-500 text-white px-6 py-2 rounded block mb-4">Login</a>
+        <a href="{{ route('login') }}" class="bg-blue-500 text-white px-6 py-2 rounded block mb-4">Ingresar</a>
         <a href="{{ route('register') }}" class="bg-green-500 text-white px-6 py-2 rounded block">Registrar</a>
     </div>
 
