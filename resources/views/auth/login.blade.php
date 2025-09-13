@@ -1,3 +1,10 @@
+<div class="flex items-center justify-start mt-4">
+    <a href="{{ url('/') }}" 
+       class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">
+        ← Inicio
+    </a>
+</div>
+
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
