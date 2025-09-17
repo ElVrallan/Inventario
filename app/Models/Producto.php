@@ -9,27 +9,50 @@ class Producto extends Model
 {
     use HasFactory;
 
-    protected $table = 'products';
+    // Nombre de la tabla explícito (por si acaso)
+    protected $table = 'productos';
 
+    // Campos que se pueden asignar masivamente
     protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'quantity',
-        'main_image',
-        'created_by',
+        'nombre',
+        'descripcion',
+        'precio',
+        'cantidad',
+        'imagen_principal',
+        'creado_por',
+        'categoria_id',
+        'proveedor_id',
     ];
 
-    // Relación con usuario que lo creó
-    public function creator()
+    /**
+     * Relación con el usuario que creó el producto
+     */
+    public function creador()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'creado_por');
     }
 
-        
-    public function images()
+    /**
+     * Relación con la categoría del producto
+     */
+    public function categoria()
     {
-        return $this->hasMany(ProductImage::class);
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
+    /**
+     * Relación con el proveedor del producto
+     */
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
+    /**
+     * Relación con las imágenes del producto
+     */
+    public function imagenes()
+    {
+        return $this->hasMany(ProductoImagen::class, 'producto_id');
+    }
 }

@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Models\ProductoImagen;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
     public function __construct()
     {
-        // Middleware de autenticación y roles válidos
         $this->middleware(['auth', 'role:admin,vendedor']);
 
-        // Middleware adicional para bloquear usuarios 'pendiente'
         $this->middleware(function ($request, $next) {
-            if(auth()->user()->rol === 'pendiente'){
+            if (auth()->user()->rol === 'pendiente') {
                 abort(403, 'Cuenta pendiente de aprobación.');
             }
             return $next($request);
@@ -22,139 +22,142 @@ class ProductoController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Mostrar todos los productos
      */
     public function index()
     {
-        $productos = \App\Models\Producto::all(); // O con paginación: Producto::paginate(10);
-
+        $productos = Producto::with('imagenes')->get();
         return view('productos.index', compact('productos'));
     }
 
-
     /**
-     * Show the form for creating a new resource.
+     * Formulario de creación
      */
     public function create()
     {
-        //
+        return view('productos.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guardar un nuevo producto
      */
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-            'main_image' => 'nullable|image|max:2048',
-            'gallery_images.*' => 'nullable|image|max:2048',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric',
+            'cantidad' => 'required|integer',
+            'imagen_principal' => 'nullable|image|max:2048',
+            'galeria.*' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name', 'description', 'price', 'quantity');
-        $data['created_by'] = auth()->id();
+        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');
+        $data['creado_por'] = auth()->id();
 
         // Imagen principal
-        if($request->hasFile('main_image')){
-            $data['main_image'] = $request->file('main_image')->store('products', 'public');
+        if ($request->hasFile('imagen_principal')) {
+            $data['imagen_principal'] = $request->file('imagen_principal')->store('productos', 'public');
         }
 
         $producto = Producto::create($data);
 
-        // Galería de imágenes
-        if($request->hasFile('gallery_images')){
-            foreach($request->file('gallery_images') as $img){
-                $path = $img->store('products', 'public');
-                $producto->images()->create(['path' => $path]);
+        // Galería
+        if ($request->hasFile('galeria')) {
+            foreach ($request->file('galeria') as $img) {
+                $ruta = $img->store('productos', 'public');
+                ProductoImagen::create([
+                    'producto_id' => $producto->id,
+                    'ruta_imagen' => $ruta
+                ]);
             }
         }
 
         return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
     }
 
-
     /**
-     * Display the specified resource.
+     * Mostrar un producto
      */
-    public function show(string $id)
+    public function show(Producto $producto)
     {
-        //
+        $producto->load('imagenes');
+        return view('productos.show', compact('producto'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Formulario de edición
      */
-    public function edit(string $id)
+    public function edit(Producto $producto)
     {
-        //
+        $producto->load('imagenes');
+        return view('productos.edit', compact('producto'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar un producto
      */
     public function update(Request $request, Producto $producto)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-            'main_image' => 'nullable|image|max:2048',
-            'gallery_images.*' => 'nullable|image|max:2048',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric',
+            'cantidad' => 'required|integer',
+            'imagen_principal' => 'nullable|image|max:2048',
+            'galeria.*' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name', 'description', 'price', 'quantity');
+        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');
 
-        // Actualizar imagen principal
-        if($request->hasFile('main_image')){
-            // Borrar imagen antigua si existe
-            if($producto->main_image && \Storage::disk('public')->exists($producto->main_image)){
-                \Storage::disk('public')->delete($producto->main_image);
+        // Imagen principal
+        if ($request->hasFile('imagen_principal')) {
+            if ($producto->imagen_principal && Storage::disk('public')->exists($producto->imagen_principal)) {
+                Storage::disk('public')->delete($producto->imagen_principal);
             }
-            $data['main_image'] = $request->file('main_image')->store('products', 'public');
+            $data['imagen_principal'] = $request->file('imagen_principal')->store('productos', 'public');
         }
 
         $producto->update($data);
 
-        // Subir nuevas imágenes a la galería
-        if($request->hasFile('gallery_images')){
-            foreach($request->file('gallery_images') as $img){
-                $path = $img->store('products', 'public');
-                $producto->images()->create(['path' => $path]);
+        // Galería
+        if ($request->hasFile('galeria')) {
+            foreach ($request->file('galeria') as $img) {
+                $ruta = $img->store('productos', 'public');
+                ProductoImagen::create([
+                    'producto_id' => $producto->id,
+                    'ruta_imagen' => $ruta
+                ]);
             }
         }
 
         return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
     }
 
-
     /**
-     * Remove the specified resource from storage.
+     * Eliminar un producto
      */
     public function destroy(Producto $producto)
     {
-        if(auth()->user()->rol !== 'admin') {
+        if (auth()->user()->rol !== 'admin') {
             abort(403);
         }
 
-        // Borrar imagen principal
-        if($producto->main_image && \Storage::disk('public')->exists($producto->main_image)){
-            \Storage::disk('public')->delete($producto->main_image);
+        // Imagen principal
+        if ($producto->imagen_principal && Storage::disk('public')->exists($producto->imagen_principal)) {
+            Storage::disk('public')->delete($producto->imagen_principal);
         }
 
-        // Borrar imágenes de la galería
-        foreach($producto->images as $img){
-            if(\Storage::disk('public')->exists($img->path)){
-                \Storage::disk('public')->delete($img->path);
+        // Galería
+        foreach ($producto->imagenes as $img) {
+            if (Storage::disk('public')->exists($img->ruta_imagen)) {
+                Storage::disk('public')->delete($img->ruta_imagen);
             }
+            $img->delete();
         }
 
         $producto->delete();
 
         return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
     }
-
 }
