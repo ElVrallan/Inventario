@@ -24,11 +24,30 @@ class ProductoController extends Controller
     /**
      * Mostrar todos los productos
      */
-    public function index()
-    {
-        $productos = Producto::with('imagenes')->get();
-        return view('productos.index', compact('productos'));
+public function index(Request $request)
+{
+    $query = Producto::with('imagenes');
+
+    if ($request->has('q') && $request->q != '') {
+        $search = $request->q;
+        $query->where(function($q) use ($search) {
+            $q->where('nombre', 'like', "%{$search}%")
+              ->orWhere('descripcion', 'like', "%{$search}%")
+              ->orWhere('precio', 'like', "%{$search}%")
+              ->orWhere('cantidad', 'like', "%{$search}%");
+        });
     }
+
+    $productos = $query->orderBy('id', 'desc')->paginate(9);
+
+    // Si es AJAX, solo devolvemos las tarjetas
+    if ($request->ajax()) {
+        return view('productos.partials.productos_grid', compact('productos'))->render();
+    }
+
+    return view('productos.index', compact('productos'));
+}
+
 
     /**
      * Formulario de creación

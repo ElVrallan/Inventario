@@ -16,10 +16,10 @@
     @include('productos.partials.productos_grid', ['productos' => $productos])
 </div>
 
+<div id="loader" style="display:none; text-align:center; margin:2rem 0;">
+    <p>Cargando más productos...</p>
+</div>
 
-    <div id="loader" style="display:none; text-align:center; margin:2rem 0;">
-        <p>Cargando más productos...</p>
-    </div>
 </div>
 @endsection
 

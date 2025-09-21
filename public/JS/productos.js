@@ -13,31 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
             loading = true;
             loader.style.display = 'block';
-            axios.get(`{{ route('productos.index') }}?page=${page}&q=${searchInput.value}`)
+            
+            axios.get(`${window.location.pathname}?page=${page}&q=${searchInput.value}`)
                 .then(res => {
-                    if (!res.data.trim()) finished = true;
-                    else container.insertAdjacentHTML('beforeend', res.data);
-                    page++;
+                    if (!res.data.trim()) {
+                        finished = true;
+                    } else {
+                        container.insertAdjacentHTML('beforeend', res.data);
+                        page++;
+                    }
                     loading = false;
                     loader.style.display = 'none';
                 })
-                .catch(err => { loading = false; loader.style.display = 'none'; console.error(err); });
-        }
-    });
-
-    // Búsqueda en tiempo real
-    let searchTimeout;
-    searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            page = 1;
-            finished = false;
-            axios.get(`{{ route('productos.index') }}?q=${searchInput.value}`)
-                .then(res => {
-                    container.innerHTML = res.data;
-                    page = 2;
+                .catch(err => {
+                    console.error(err);
+                    loading = false;
+                    loader.style.display = 'none';
                 });
-        }, 300);
+        }
     });
 
     // SweetAlert para eliminar productos
