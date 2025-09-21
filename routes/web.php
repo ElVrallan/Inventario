@@ -6,7 +6,12 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth', 'role:vendedor,admin'])->group(function() {
+    Route::post('productos/{producto}/vender', [VentaController::class, 'store'])->name('productos.vender');
+});
 
 // Ruta principal
 Route::get('/', function () {

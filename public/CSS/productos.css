@@ -1,4 +1,6 @@
-/* Tarjeta principal */
+/* ========================
+   Tarjeta principal
+======================== */
 .producto-card {
     display: flex;
     flex-direction: column;
@@ -7,23 +9,39 @@
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: box-shadow 0.3s, transform 0.2s;
+
+    width: 100%;      /* respeta la columna del grid */
+    box-sizing: border-box;
 }
+
+@media (min-width: 1024px) {
+    .producto-card {
+        /* max-width opcional solo si quieres limitar el tamaño, pero no rompe el grid */
+        max-width: none;
+    }
+}
+
+
 
 .producto-card:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transform: translateY(-3px);
 }
 
-/* Imagen */
+/* ========================
+   Imagen
+======================== */
 .producto-card img {
     width: 100%;
-    max-height: 22rem; /* antes 8rem */
+    max-height: 12rem; /* Mobile-first */
     object-fit: contain;
     background-color: #f3f4f6;
     display: block;
 }
 
-/* Contenido */
+/* ========================
+   Contenido
+======================== */
 .producto-card-content {
     flex: 1;
     display: flex;
@@ -53,35 +71,7 @@
     font-weight: 500;
 }
 
-/* Footer */
-.producto-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1rem 1rem 1rem;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-/* Botones en footer */
-.producto-card-footer .flex {
-    display: flex;
-    gap: 0.5rem;
-}
-
-/* Iconos */
-.producto-card-footer a svg,
-.producto-card-footer button svg {
-    vertical-align: middle;
-}
-
-/* Hover botones */
-.producto-card-footer a:hover,
-.producto-card-footer button:hover {
-    cursor: pointer;
-}
-
-/* Stock crítico (opcional animación) */
+/* Stock crítico animación */
 .producto-card-content .cantidad span.bg-red-100 {
     animation: pulse 1.5s infinite;
 }
@@ -91,9 +81,72 @@
     50% { background-color: #fca5a5; }
 }
 
-/* Responsive imagen */
-@media (max-width: 768px) {
+/* ========================
+   Footer
+======================== */
+.producto-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem 1rem 1rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.producto-card-footer .flex {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.producto-card-footer a svg,
+.producto-card-footer button svg {
+    vertical-align: middle;
+}
+
+.producto-card-footer a:hover,
+.producto-card-footer button:hover {
+    cursor: pointer;
+}
+
+/* ========================
+   Hover y transición
+======================== */
+.producto-card:hover .producto-card-content h2,
+.producto-card:hover .producto-card-content .precio {
+    transition: color 0.2s;
+}
+
+/* ========================
+   Responsive Desktop
+======================== */
+@media (min-width: 769px) {
     .producto-card img {
-        max-height: 12rem;
+        max-height: 22rem;
+    }
+
+    .producto-card-content h2 {
+        font-size: 1.25rem;
+    }
+
+    .producto-card-content .precio {
+        font-size: 1rem;
+    }
+
+    .producto-card-content .cantidad span {
+        font-size: 0.875rem;
+    }
+}
+
+/* ========================
+   Responsive Laptop / XL
+======================== */
+@media (min-width: 1024px) {
+    .producto-card {
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .producto-card img {
+        max-height: 24rem;
     }
 }
