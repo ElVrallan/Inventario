@@ -4,16 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Producto;
-use App\Models\ProductoImagen;
 
 class ProductoSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Crear 3 productos de ejemplo
         $productos = [
             [
                 'nombre' => 'Laptop Gamer',
@@ -21,9 +16,7 @@ class ProductoSeeder extends Seeder
                 'precio' => 4500000,
                 'cantidad' => 10,
                 'imagen_principal' => 'productos/laptop.jpg',
-                'creado_por' => 1, // 👈 asegúrate de tener un usuario con id=1
-                'categoria_id' => null,
-                'proveedor_id' => null,
+                'creado_por' => 1,
             ],
             [
                 'nombre' => 'Mouse Inalámbrico',
@@ -32,8 +25,6 @@ class ProductoSeeder extends Seeder
                 'cantidad' => 50,
                 'imagen_principal' => 'productos/mouse.jpg',
                 'creado_por' => 1,
-                'categoria_id' => null,
-                'proveedor_id' => null,
             ],
             [
                 'nombre' => 'Teclado Mecánico',
@@ -42,21 +33,35 @@ class ProductoSeeder extends Seeder
                 'cantidad' => 30,
                 'imagen_principal' => 'productos/teclado.jpg',
                 'creado_por' => 1,
-                'categoria_id' => null,
-                'proveedor_id' => null,
+            ],
+            [
+                'nombre' => 'Tecladom Mecánico RGB',
+                'descripcion' => 'Teclado mecánico retroiluminado con switches azules.',
+                'precio' => 220000,
+                'cantidad' => 15,
+                'imagen_principal' => 'productos/tecladom.jpg',
+                'creado_por' => 1,
+            ],
+            [
+                'nombre' => 'Silla Gamer',
+                'descripcion' => 'Silla ergonómica ajustable con soporte lumbar.',
+                'precio' => 850000,
+                'cantidad' => 5,
+                'imagen_principal' => 'productos/silla.jpg',
+                'creado_por' => 1,
+            ],
+            [
+                'nombre' => 'Monitor 24" Full HD',
+                'descripcion' => 'Monitor LED de 24 pulgadas con resolución 1920x1080.',
+                'precio' => 700000,
+                'cantidad' => 8,
+                'imagen_principal' => 'productos/monitor.jpg',
+                'creado_por' => 1,
             ],
         ];
 
-        foreach ($productos as $productoData) {
-            $producto = Producto::create($productoData);
-
-            // Agregar imágenes adicionales
-            for ($i = 1; $i <= 2; $i++) {
-                ProductoImagen::create([
-                    'producto_id' => $producto->id,
-                    'ruta_imagen' => "productos/galeria_{$producto->id}_{$i}.jpg",
-                ]);
-            }
+        foreach ($productos as $producto) {
+            Producto::create($producto);
         }
     }
 }

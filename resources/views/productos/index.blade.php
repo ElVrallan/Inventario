@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/productos.css') }}">
+@endpush
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Lista de productos</h1>
@@ -7,39 +11,33 @@
     @if($productos->isEmpty())
     <p class="text-gray-500">No hay productos registrados.</p>
     @else
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         @foreach($productos as $producto)
-        <a href="{{ route('productos.show', $producto->id) }}"
-            class="block bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <a href="{{ route('productos.show', $producto->id) }}" class="producto-card">
 
             {{-- Imagen --}}
             <img src="{{ $producto->imagen_principal ? asset('storage/'.$producto->imagen_principal) : 'https://via.placeholder.com/300x200?text=Sin+Imagen' }}"
-                alt="Imagen de {{ $producto->nombre }}" class="w-full h-48 object-cover">
+                alt="Imagen de {{ $producto->nombre }}">
 
             {{-- Contenido --}}
-            <div class="p-4">
-                <h2 class="text-lg font-semibold text-gray-800 truncate">{{ $producto->nombre }}</h2>
-                <p class="text-green-600 font-bold mt-2">
-                    ${{ number_format($producto->precio, 0, ',', '.') }} COP
-                </p>
-                <p class="mt-1 text-sm text-gray-600">
+            <div class="producto-card-content">
+                <h2>{{ $producto->nombre }}</h2>
+                <p class="precio">${{ number_format($producto->precio, 0, ',', '.') }} COP</p>
+                <p class="cantidad">
                     Cantidad:
                     @if($producto->cantidad > 10)
-                    <span
-                        class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">{{ $producto->cantidad }}</span>
+                    <span class="bg-green-100 text-green-700">{{ $producto->cantidad }}</span>
                     @elseif($producto->cantidad > 0)
-                    <span
-                        class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">{{ $producto->cantidad }}</span>
+                    <span class="bg-yellow-100 text-yellow-700">{{ $producto->cantidad }}</span>
                     @else
-                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Agotado</span>
+                    <span class="bg-red-100 text-red-700">Agotado</span>
                     @endif
                 </p>
             </div>
 
-            {{-- Footer con acciones --}}
-            <div class="px-4 pb-4 flex justify-between items-center text-sm">
-                <span class="text-gray-500">Ver detalles ➝</span>
-
+            {{-- Footer --}}
+            <div class="producto-card-footer">
+                <span>Ver detalles ➝</span>
                 @if(auth()->user()->rol === 'admin')
                 <form action="{{ route('productos.destroy', $producto->id) }}" method="POST"
                     onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
@@ -55,6 +53,7 @@
                 </form>
                 @endif
             </div>
+
 
         </a>
         @endforeach

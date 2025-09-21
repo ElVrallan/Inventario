@@ -1,0 +1,21 @@
+/* dashboard.css */
+
+/* Ajustes puntuales para los cards del dashboard */
+.dashboard-card {
+    transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+/* Títulos de los cards */
+.dashboard-card h3 {
+    font-size: 1.125rem;
+}
+
+/* Descripciones de los cards */
+.dashboard-card p {
+    color: #4b5563; /* gris Tailwind normal */
+}

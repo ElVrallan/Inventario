@@ -1,20 +1,23 @@
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
+@endpush
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Inventario</title>
-
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    @stack('styles')
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="welcome-container">
 
-    <div class="bg-white p-8 rounded shadow-md w-96 text-center">
-        <h1 class="text-2xl font-bold mb-6">Inventario</h1>
+    <div class="welcome-card">
+        <h1>Inventario</h1>
 
-        <a href="{{ route('login') }}" class="bg-blue-500 text-white px-6 py-2 rounded block mb-4">Ingresar</a>
-        <a href="{{ route('register') }}" class="bg-green-500 text-white px-6 py-2 rounded block">Registrar</a>
+        <a href="{{ route('login') }}" class="bg-blue-500">Ingresar</a>
+        <a href="{{ route('register') }}" class="bg-green-500">Registrar</a>
     </div>
 
 </body>
