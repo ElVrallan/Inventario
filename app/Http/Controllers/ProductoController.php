@@ -48,6 +48,30 @@ public function index(Request $request)
     return view('productos.index', compact('productos'));
 }
 
+public function buscar(Request $request)
+{
+    $query = $request->input('q');
+    $full  = $request->boolean('full', false);
+
+    $productos = \App\Models\Producto::query()
+        ->where('nombre', 'LIKE', "%{$query}%")
+        ->orWhere('descripcion', 'LIKE', "%{$query}%")
+        ->orderBy('nombre') // puedes mejorar el orden con relevancia
+        ->paginate(12);
+
+    if ($full) {
+        // Vista completa tipo index (con scroll infinito)
+        return view('productos.index', compact('productos'));
+    }
+
+    // Solo mostramos los más relevantes (6)
+    $topProductos = $productos->take(6);
+
+    return view('productos.partials.resultados_relevantes', [
+        'productos' => $topProductos,
+        'query' => $query
+    ]);
+}
 
     /**
      * Formulario de creación

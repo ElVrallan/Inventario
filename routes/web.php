@@ -79,5 +79,7 @@ Route::get('/pendiente', function () {
     return view('pendiente');
 })->name('pendiente');
 
+Route::get('productos/buscar', [ProductoController::class, 'buscar'])->name('productos.buscar');
+
 // Rutas de autenticación
 require __DIR__.'/auth.php';
