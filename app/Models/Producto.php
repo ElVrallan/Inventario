@@ -43,6 +43,7 @@ class Producto extends Model
     /**
      * Relación con el proveedor del producto
      */
+    // Relación con proveedor
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');

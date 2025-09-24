@@ -194,3 +194,19 @@
 #search-button:hover svg {
     color: #374151; /* gris más oscuro al hover */
 }
+
+/* Antes: tenía max-height y overflow */
+#search-preview {
+    max-height: none;   /* que se expanda lo necesario */
+    overflow-y: visible;
+}
+
+
+#search-preview ul li {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#search-preview ul li:hover {
+    background: #f3f4f6; /* gris claro Tailwind */
+}

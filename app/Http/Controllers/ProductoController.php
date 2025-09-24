@@ -48,30 +48,64 @@ public function index(Request $request)
     return view('productos.index', compact('productos'));
 }
 
-public function buscar(Request $request)
+public function searchPreview(Request $request)
+{
+    $query = $request->get('q', '');
+
+    $productos = Producto::query()
+        ->where('id', 'like', "%{$query}%")
+        ->orWhere('nombre', 'like', "%{$query}%")
+        ->orWhere('descripcion', 'like', "%{$query}%")
+        ->orWhere('precio', 'like', "%{$query}%")
+        ->orWhere('cantidad', 'like', "%{$query}%")
+        ->orWhere('creado_por', 'like', "%{$query}%")
+        ->orWhere('categoria_id', 'like', "%{$query}%")
+        ->orWhere('proveedor_id', 'like', "%{$query}%")
+        ->limit(5)
+        ->get();
+
+    return view('productos.partials.search_preview', compact('productos'));
+}
+
+
+public function search(Request $request)
 {
     $query = $request->input('q');
-    $full  = $request->boolean('full', false);
+    $user = auth()->user();
 
-    $productos = \App\Models\Producto::query()
-        ->where('nombre', 'LIKE', "%{$query}%")
-        ->orWhere('descripcion', 'LIKE', "%{$query}%")
-        ->orderBy('nombre') // puedes mejorar el orden con relevancia
-        ->paginate(12);
+    $productos = Producto::query()
+        ->when($query, function ($q) use ($query, $user) {
+            $q->where(function ($sub) use ($query, $user) {
+                $sub->where('id', 'like', "%{$query}%")
+                    ->orWhere('nombre', 'like', "%{$query}%")
+                    ->orWhere('descripcion', 'like', "%{$query}%")
+                    ->orWhere('precio', 'like', "%{$query}%");
 
-    if ($full) {
-        // Vista completa tipo index (con scroll infinito)
-        return view('productos.index', compact('productos'));
-    }
+                if ($user && $user->rol === 'admin') {
+                    $sub->orWhereHas('proveedor', function ($proveedorQuery) use ($query) {
+                        $proveedorQuery->where('nombre', 'like', "%{$query}%");
+                    });
+                }
+            });
+        })
+        ->distinct()
+        ->orderByRaw("
+            CASE
+                WHEN id LIKE ? THEN 1
+                WHEN nombre LIKE ? THEN 2
+                WHEN descripcion LIKE ? THEN 3
+                WHEN precio LIKE ? THEN 4
+                ELSE 5
+            END
+        ", ["%{$query}%", "%{$query}%", "%{$query}%", "%{$query}%"])
+        ->paginate(20);
 
-    // Solo mostramos los más relevantes (6)
-    $topProductos = $productos->take(6);
-
-    return view('productos.partials.resultados_relevantes', [
-        'productos' => $topProductos,
-        'query' => $query
-    ]);
+    return view('productos.search_results', compact('productos', 'query'));
 }
+
+
+
+
 
     /**
      * Formulario de creación

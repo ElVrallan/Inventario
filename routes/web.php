@@ -24,6 +24,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Buscar productos dinámicamente
+Route::get('/productos/search/preview', [ProductoController::class, 'searchPreview'])->name('productos.search.preview');
+
+// Buscar productos completos
+Route::get('/productos/search', [ProductoController::class, 'search'])->name('productos.search');
+
 // Dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');
