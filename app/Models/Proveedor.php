@@ -7,6 +7,12 @@ class Proveedor extends Model
 {
     protected $table = 'proveedores';
 
+    protected $fillable = [
+        'nombre',
+        'email',
+        'telefono'
+    ];
+
     // Relación inversa con productos
     public function productos()
     {

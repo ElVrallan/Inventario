@@ -41,11 +41,37 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'role:admin,vendedor'])->group(function () {
     // Solo lectura para vendedores, acceso completo para admin se define más abajo
     Route::resource('productos', ProductoController::class)->only(['index', 'show']);
-    Route::resource('categorias', CategoriaController::class)->only(['index', 'show']);
-    Route::resource('proveedores', ProveedorController::class)->only(['index', 'show']);
+    Route::resource('categorias', CategoriaController::class)->only(['index']);
+    Route::resource('proveedores', ProveedorController::class)->only(['index']);
 
     // Reportes básicos
     Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
+});
+
+// ----------------------
+// Solo Admin
+// ----------------------
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Acceso completo a gestión de productos para admin
+    Route::resource('productos', ProductoController::class)->except(['index', 'show']);
+    
+    // Gestión completa de categorías
+    Route::resource('categorias', CategoriaController::class)->except(['index']);
+    
+    // Gestión completa de proveedores
+    Route::resource('proveedores', ProveedorController::class)->except(['index', 'show']);
+    
+    // Gestión de usuarios
+    Route::get('admin/usuarios', [UserManagementController::class, 'index'])->name('admin.usuarios.lista');
+    Route::get('admin/usuarios/crear', [UserManagementController::class, 'create'])->name('admin.usuarios.crear');
+    Route::post('admin/usuarios', [UserManagementController::class, 'store'])->name('admin.usuarios.store');
+    Route::get('admin/usuarios/{user}/editar', [UserManagementController::class, 'edit'])->name('admin.usuarios.editar');
+    Route::put('admin/usuarios/{user}', [UserManagementController::class, 'update'])->name('admin.usuarios.update');
+    Route::delete('admin/usuarios/{user}', [UserManagementController::class, 'destroy'])->name('admin.usuarios.destroy');
+    
+    // Reportes avanzados
+    Route::get('reportes/avanzados', [ReporteController::class, 'avanzados'])->name('reportes.avanzados');
+    Route::get('reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
 });
 
 // ----------------------

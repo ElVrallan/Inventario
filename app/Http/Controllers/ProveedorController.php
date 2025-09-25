@@ -9,7 +9,7 @@ class ProveedorController extends Controller
 {
     public function index()
     {
-        $proveedores = Proveedor::all();
+        $proveedores = Proveedor::orderBy('nombre')->paginate(10);
         return view('proveedores.index', compact('proveedores'));
     }
 
@@ -22,36 +22,36 @@ class ProveedorController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email',
+            'telefono' => 'required|string|max:20',
+            'email' => 'required|email|unique:proveedores'
         ]);
 
-        Proveedor::create($request->all());
+        Proveedor::create($request->only(['nombre', 'email', 'telefono']));
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor creado correctamente.');
     }
 
-    public function edit(Proveedor $proveedor)
+    public function edit(Proveedor $proveedore)
     {
-        return view('proveedores.edit', compact('proveedor'));
+        return view('proveedores.edit', compact('proveedore'));
     }
 
-    public function update(Request $request, Proveedor $proveedor)
+    public function update(Request $request, Proveedor $proveedore)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email',
+            'telefono' => 'required|string|max:20',
+            'email' => 'required|email|unique:proveedores,email,' . $proveedore->id
         ]);
 
-        $proveedor->update($request->all());
+        $proveedore->update($request->only(['nombre', 'email', 'telefono']));
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado.');
     }
 
-    public function destroy(Proveedor $proveedor)
+    public function destroy(Proveedor $proveedore)
     {
-        $proveedor->delete();
+        $proveedore->delete();
         return redirect()->route('proveedores.index')->with('success', 'Proveedor eliminado.');
     }
 }

@@ -3,7 +3,8 @@
 @else
     <ul class="divide-y divide-gray-200">
         @foreach($productos as $producto)
-            <li class="p-2 hover:bg-gray-100 flex items-center gap-3">
+            <li class="p-2 hover:bg-gray-100 flex items-center gap-3 cursor-pointer"
+                onclick="window.location='{{ route('productos.show', $producto->id) }}'">
                 {{-- Imagen pequeña --}}
                 <img src="{{ asset('storage/'.$producto->imagen_principal) }}" 
                      alt="{{ $producto->nombre }}" 
