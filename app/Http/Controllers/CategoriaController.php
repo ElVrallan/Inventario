@@ -9,7 +9,7 @@ class CategoriaController extends Controller
 {
     public function index()
     {
-        $categorias = Categoria::orderBy('nombre')->paginate(10);
+        $categorias = Categoria::with('usuario')->orderBy('nombre')->paginate(10);
         return view('categorias.index', compact('categorias'));
     }
 
@@ -24,8 +24,10 @@ class CategoriaController extends Controller
             'nombre' => 'required|string|max:255'
         ]);
 
+        // Asignar creado_por con el usuario autenticado para evitar error DB
         Categoria::create([
             'nombre' => $request->nombre,
+            'creado_por' => auth()->id(),
         ]);
 
         return redirect()->route('categorias.index')->with('success', 'Categoría creada correctamente.');

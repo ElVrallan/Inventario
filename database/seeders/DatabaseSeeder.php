@@ -30,16 +30,15 @@ class DatabaseSeeder extends Seeder
 
         // Categorías básicas
         $categorias = [
-            ['nombre' => 'Computadoras', 'descripcion' => 'Equipos de escritorio y portátiles'],
-            ['nombre' => 'Periféricos', 'descripcion' => 'Mouse, teclados, monitores, etc'],
-            ['nombre' => 'Componentes', 'descripcion' => 'Partes y piezas de computadora'],
-            ['nombre' => 'Redes', 'descripcion' => 'Equipos de conexión y networking'],
+            ['nombre' => 'Computadoras'],
+            ['nombre' => 'Periféricos'],
+            ['nombre' => 'Componentes'],
+            ['nombre' => 'Redes'],
         ];
 
         foreach ($categorias as $cat) {
             Categoria::create([
                 'nombre' => $cat['nombre'],
-                'descripcion' => $cat['descripcion'],
                 'creado_por' => $admin->id
             ]);
         }

@@ -26,7 +26,11 @@ class ProveedorController extends Controller
             'email' => 'required|email|unique:proveedores'
         ]);
 
-        Proveedor::create($request->only(['nombre', 'email', 'telefono']));
+        // Asegurar que 'creado_por' esté presente (usar valor del formulario si existe,
+        // sino usar el usuario autenticado)
+        $request->merge(['creado_por' => $request->input('creado_por', auth()->id())]);
+
+        Proveedor::create($request->all());
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor creado correctamente.');
     }

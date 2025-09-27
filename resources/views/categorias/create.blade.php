@@ -13,6 +13,9 @@
                 @method('PUT')
             @endif
 
+            {{-- Enviar el id del usuario que crea la categoría para evitar el error "creado_por" --}}
+            <input type="hidden" name="creado_por" value="{{ old('creado_por', auth()->id()) }}">
+
             <div class="mb-4">
                 <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
                 <input type="text" name="nombre" id="nombre" 

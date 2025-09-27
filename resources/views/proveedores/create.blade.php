@@ -43,6 +43,8 @@
                 @enderror
             </div>
 
+            <input type="hidden" name="creado_por" value="{{ old('creado_por', auth()->id()) }}">
+
             <div class="flex justify-end">
                 <a href="{{ route('proveedores.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded mr-2">
                     Cancelar

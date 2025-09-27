@@ -1,0 +1,42 @@
+/* Botones de acción en la columna acciones */
+.action-buttons {
+    gap: 0.5rem; /* espacio entre editar y eliminar */
+}
+
+/* botón común para editar/eliminar: mismo alto y centrado */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;        /* altura fija para que coincida con la fila */
+    min-width: 36px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* icono dentro del botón para asegurar tamaño y centrado */
+.action-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* colores específicos */
+.edit-btn {
+    color: #4f46e5; /* indigo-600 */
+}
+.edit-btn:hover {
+    color: #312e81; /* indigo-900 */
+    background: rgba(79,70,229,0.06);
+}
+
+.delete-btn {
+    color: #dc2626; /* red-600 */
+}
+.delete-btn:hover {
+    color: #7f1d1d; /* red-900 */
+    background: rgba(220,38,38,0.06);
+}

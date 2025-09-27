@@ -10,7 +10,8 @@ class Proveedor extends Model
     protected $fillable = [
         'nombre',
         'email',
-        'telefono'
+        'telefono',
+        'creado_por'
     ];
 
     // Relación inversa con productos
