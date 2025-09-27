@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
 <div class="flex items-center justify-start mt-4">
     <a href="{{ url('/') }}" 
        class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">
@@ -11,7 +18,18 @@
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- <x-auth-session-status class="mb-4" :status="session('status')" /> --}}
+    @if (session('status'))
+        <script>
+            Swal.fire({
+                title: '¡Correo enviado!',
+                text: 'Hemos enviado un enlace de restablecimiento de contraseña a tu correo electrónico.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#3085d6'
+            });
+        </script>
+    @endif
 
     <form method="POST" action="{{ route('password.email') }}">
         @csrf
@@ -30,3 +48,5 @@
         </div>
     </form>
 </x-guest-layout>
+</body>
+</html>

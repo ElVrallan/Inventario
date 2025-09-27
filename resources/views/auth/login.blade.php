@@ -10,7 +10,22 @@
 </div>
 
 <x-guest-layout>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- Remove or comment out the following line --}}
+    {{-- <x-auth-session-status class="mb-4" :status="session('status')" /> --}}
+
+    {{-- Add this after x-guest-layout --}}
+    @if(session('status'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            title: '¡Contraseña restablecida!',
+            text: 'Tu contraseña ha sido actualizada correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#3085d6'
+        });
+    </script>
+    @endif
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
