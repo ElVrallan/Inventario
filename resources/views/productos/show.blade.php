@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/showproducto.css') }}">
+<link rel="stylesheet" href="{{ asset('CSS/showproducto.css') }}">
 @endpush
 
 @section('content')
@@ -98,5 +98,19 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ asset('js/showproducto.js') }}"></script>
+<script src="{{ asset('JS/showproducto.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const saleMessage = @json(session('success'));
+    if (saleMessage) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: saleMessage,
+            confirmButtonText: 'Aceptar',
+            allowOutsideClick: false
+        });
+    }
+});
+</script>
 @endpush

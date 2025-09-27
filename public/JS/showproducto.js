@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Carrusel ---
+    // --- Elements (defensivo) ---
     const mainImg = document.querySelector('.showproducto-main-img');
     const galleryImgs = document.querySelectorAll('.showproducto-gallery img');
     const lightbox = document.getElementById('showproducto-lightbox');
@@ -7,54 +7,74 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevBtn = document.getElementById('prev-image');
     const nextBtn = document.getElementById('next-image');
 
-    const images = [mainImg.src, ...Array.from(galleryImgs).map(img => img.src)];
+    // Build images array only with existing srcs
+    const images = [];
+    if (mainImg && mainImg.src) images.push(mainImg.src);
+    if (galleryImgs && galleryImgs.length) {
+        Array.from(galleryImgs).forEach(img => {
+            if (img && img.src) images.push(img.src);
+        });
+    }
+
     let currentIndex = 0;
 
     function showLightbox(index) {
-        currentIndex = index;
+        if (!lightbox || !lightboxImg || images.length === 0) return;
+        currentIndex = (index >= 0 && index < images.length) ? index : 0;
         lightboxImg.src = images[currentIndex];
         lightbox.classList.add('active');
     }
 
     function hideLightbox() {
+        if (!lightbox) return;
         lightbox.classList.remove('active');
     }
 
     function showNext() {
+        if (images.length === 0) return;
         currentIndex = (currentIndex + 1) % images.length;
-        lightboxImg.src = images[currentIndex];
+        if (lightboxImg) lightboxImg.src = images[currentIndex];
     }
 
     function showPrev() {
+        if (images.length === 0) return;
         currentIndex = (currentIndex - 1 + images.length) % images.length;
-        lightboxImg.src = images[currentIndex];
+        if (lightboxImg) lightboxImg.src = images[currentIndex];
     }
 
-    mainImg.style.cursor = 'pointer';
-    mainImg.addEventListener('click', () => showLightbox(0));
-    galleryImgs.forEach((img, idx) => {
-        img.style.cursor = 'pointer';
-        img.addEventListener('click', () => showLightbox(idx + 1));
-    });
+    // Attach listeners only if relevant elements exist
+    if (mainImg) {
+        mainImg.style.cursor = 'pointer';
+        mainImg.addEventListener('click', () => showLightbox(0));
+    }
 
-    lightbox.addEventListener('click', (e) => {
-        if(e.target === lightboxImg) return;
-        hideLightbox();
-    });
+    if (galleryImgs && galleryImgs.length) {
+        galleryImgs.forEach((img, idx) => {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => showLightbox(idx + (mainImg ? 1 : 0)));
+        });
+    }
 
-    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
-    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+    if (lightbox) {
+        lightbox.addEventListener('click', (e) => {
+            // close when clicking on overlay (not the image)
+            if (e.target === lightbox) hideLightbox();
+        });
+    }
+
+    if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+    if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
 
     document.addEventListener('keydown', (e) => {
-        if(!lightbox.classList.contains('active')) return;
-        if(e.key === 'ArrowRight') showNext();
-        if(e.key === 'ArrowLeft') showPrev();
-        if(e.key === 'Escape') hideLightbox();
+        if (!lightbox || !lightbox.classList.contains('active')) return;
+        if (e.key === 'ArrowRight') showNext();
+        if (e.key === 'ArrowLeft') showPrev();
+        if (e.key === 'Escape') hideLightbox();
     });
 
     // --- SweetAlert para venta ---
     const venderForm = document.getElementById('vender-form');
-    if(venderForm){
+    if (venderForm){
         venderForm.addEventListener('submit', function(e){
             e.preventDefault();
             Swal.fire({

@@ -175,5 +175,10 @@ class DatabaseSeeder extends Seeder
                 'creado_por' => $admin->id
             ]);
         }
+
+        // Llamar al seeder de imágenes de productos
+        $this->call([
+            ProductoImagenesSeeder::class,
+        ]);
     }
 }
