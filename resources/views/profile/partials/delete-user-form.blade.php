@@ -9,6 +9,13 @@
             Esta acción es irreversible. Tu cuenta será eliminada permanentemente.
         </p>
 
+        <!-- Password (required by controller validation) -->
+        <div class="mb-4">
+            <x-input-label for="password" :value="__('Contraseña actual')" />
+            <x-text-input id="password" name="password" type="password" class="block mt-1 w-full" required autocomplete="current-password" />
+            <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+        </div>
+
         <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
             Eliminar Cuenta
         </button>

@@ -14,11 +14,16 @@
     {{-- SweetAlert --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Update profile
-        const updateProfileForm = document.getElementById("update-profile-form");
+    document.addEventListener('DOMContentLoaded', function() {
+        // Buscar formularios por id o con selectores de respaldo (action)
+        const updateProfileForm = document.getElementById("update-profile-form")
+            || document.querySelector('form[action*="profile.update"]')
+            || document.querySelector('form[action*="user/profile"]');
+
         if (updateProfileForm) {
             updateProfileForm.addEventListener("submit", function(e) {
                 e.preventDefault();
+                const form = this;
                 Swal.fire({
                     title: "¿Actualizar perfil?",
                     text: "Se guardarán los cambios en tu información.",
@@ -27,16 +32,19 @@
                     confirmButtonText: "Sí, actualizar",
                     cancelButtonText: "Cancelar"
                 }).then(result => {
-                    if (result.isConfirmed) this.submit();
+                    if (result.isConfirmed) form.submit();
                 });
             });
         }
 
-        // Update password
-        const updatePasswordForm = document.getElementById("update-password-form");
+        const updatePasswordForm = document.getElementById("update-password-form")
+            || document.querySelector('form[action*="password.update"]')
+            || document.querySelector('form[action*="user/password"]');
+
         if (updatePasswordForm) {
             updatePasswordForm.addEventListener("submit", function(e) {
                 e.preventDefault();
+                const form = this;
                 Swal.fire({
                     title: "¿Cambiar contraseña?",
                     text: "Estás a punto de modificar tu contraseña.",
@@ -45,16 +53,19 @@
                     confirmButtonText: "Sí, cambiar",
                     cancelButtonText: "Cancelar"
                 }).then(result => {
-                    if (result.isConfirmed) this.submit();
+                    if (result.isConfirmed) form.submit();
                 });
             });
         }
 
-        // Delete account
-        const deleteUserForm = document.getElementById("delete-user-form");
+        const deleteUserForm = document.getElementById("delete-user-form")
+            || document.querySelector('form[action*="profile.destroy"]')
+            || document.querySelector('form[action*="user/delete"]');
+
         if (deleteUserForm) {
             deleteUserForm.addEventListener("submit", function(e) {
                 e.preventDefault();
+                const form = this;
                 Swal.fire({
                     title: "¿Eliminar cuenta?",
                     text: "Esta acción no se puede deshacer.",
@@ -63,16 +74,17 @@
                     confirmButtonText: "Sí, eliminar",
                     cancelButtonText: "Cancelar"
                 }).then(result => {
-                    if (result.isConfirmed) this.submit();
+                    if (result.isConfirmed) form.submit();
                 });
             });
         }
 
-        // Mensajes de éxito después de redirigir
+        // Mensajes de éxito después de redirigir (se muestran una vez cargado el DOM)
         @if (session('status') === 'profile-updated')
             Swal.fire("¡Perfil actualizado!", "Tu información se guardó correctamente.", "success");
         @elseif (session('status') === 'password-updated')
             Swal.fire("¡Contraseña actualizada!", "Tu contraseña se cambió correctamente.", "success");
         @endif
+    });
     </script>
 </x-app-layout>

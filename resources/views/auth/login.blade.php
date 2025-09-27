@@ -10,10 +10,8 @@
 </div>
 
 <x-guest-layout>
-    {{-- Remove or comment out the following line --}}
     {{-- <x-auth-session-status class="mb-4" :status="session('status')" /> --}}
 
-    {{-- Add this after x-guest-layout --}}
     @if(session('status'))
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
