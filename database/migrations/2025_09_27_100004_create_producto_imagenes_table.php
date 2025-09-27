@@ -10,11 +10,10 @@ return new class extends Migration
     {
         Schema::create('producto_imagenes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('producto_id');
-            $table->string('ruta_imagen');
+            $table->foreignId('producto_id')->constrained()->onDelete('cascade');
+            $table->string('ruta');
+            $table->boolean('es_principal')->default(false);
             $table->timestamps();
-
-            $table->foreign('producto_id')->references('id')->on('productos')->onDelete('cascade');
         });
     }
 

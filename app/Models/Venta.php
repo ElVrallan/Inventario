@@ -13,6 +13,8 @@ class Venta extends Model
         'producto_id',
         'user_id',
         'cantidad',
+        'precio_unitario',
+        'total'
     ];
 
     public function producto()

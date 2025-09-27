@@ -19,6 +19,8 @@ class VentaController extends Controller
             'producto_id' => $producto->id,
             'user_id' => auth()->id(),
             'cantidad' => $request->cantidad,
+            'precio_unitario' => $producto->precio,
+            'total' => $producto->precio * $request->cantidad
         ]);
 
         // Restar del inventario
