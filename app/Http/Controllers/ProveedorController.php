@@ -20,15 +20,16 @@ class ProveedorController extends Controller
 
     public function store(Request $request)
     {
+        // forzar que creado_por sea el usuario autenticado (evita FK null/incorrecto)
+        $request->merge(['creado_por' => auth()->id()]);
+
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'telefono' => 'required|string|max:20',
-            'email' => 'required|email|unique:proveedores'
+            'telefono' => 'nullable|string|max:50',
+            'email' => 'nullable|email|unique:proveedores,email',
+            'direccion' => 'nullable|string|max:255',
+            'creado_por' => 'required|exists:users,id',
         ]);
-
-        // Asegurar que 'creado_por' esté presente (usar valor del formulario si existe,
-        // sino usar el usuario autenticado)
-        $request->merge(['creado_por' => $request->input('creado_por', auth()->id())]);
 
         Proveedor::create($request->all());
 
@@ -44,11 +45,13 @@ class ProveedorController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'telefono' => 'required|string|max:20',
-            'email' => 'required|email|unique:proveedores,email,' . $proveedore->id
+            'telefono' => 'nullable|string|max:50',
+            'email' => 'required|email|unique:proveedores,email,' . $proveedore->id,
+            'direccion' => 'nullable|string|max:255',
         ]);
 
-        $proveedore->update($request->only(['nombre', 'email', 'telefono']));
+        // Actualizar sólo los campos permitidos (incluyendo direccion)
+        $proveedore->update($request->only(['nombre', 'email', 'telefono', 'direccion']));
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado.');
     }

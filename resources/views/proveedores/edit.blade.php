@@ -43,12 +43,24 @@
                 @enderror
             </div>
 
+            <div class="mb-4">
+                <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                <input type="text" name="direccion" id="direccion"
+                    value="{{ old('direccion', $proveedore->direccion ?? '') }}"
+                    class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                @error('direccion')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <input type="hidden" name="creado_por" value="{{ old('creado_por', auth()->id()) }}">
+
             <div class="flex justify-end">
                 <a href="{{ route('proveedores.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded mr-2">
                     Cancelar
                 </a>
                 <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                    {{ isset($proveedor) ? 'Actualizar' : 'Crear' }}
+                    {{ isset($proveedore) ? 'Actualizar' : 'Crear' }}
                 </button>
             </div>
         </form>

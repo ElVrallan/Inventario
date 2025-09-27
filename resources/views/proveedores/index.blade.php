@@ -30,22 +30,54 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    @if(auth()->user()->rol === 'admin')
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    @endif
+
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre
                     </th>
+
+                    @if(auth()->user()->rol === 'admin')
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono
                     </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado por
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actualizado
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones
                     </th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @foreach($proveedores as $proveedor)
                 <tr>
+                    @if(auth()->user()->rol === 'admin')
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $proveedor->id }}</td>
+                    @endif
+
                     <td class="px-6 py-4 whitespace-nowrap">{{ $proveedor->nombre }}</td>
+
+                    @if(auth()->user()->rol === 'admin')
                     <td class="px-6 py-4 whitespace-nowrap">{{ $proveedor->email }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">{{ $proveedor->telefono }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $proveedor->direccion ?? '' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ $proveedor->usuario ? $proveedor->usuario->name : ($proveedor->creado_por ?? '—') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ $proveedor->created_at ? $proveedor->created_at->format('Y-m-d H:i') : '' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {{ $proveedor->updated_at ? $proveedor->updated_at->format('Y-m-d H:i') : '' }}
+                    </td>
+
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="action-buttons inline-flex items-center">
                             <a href="{{ route('proveedores.edit', ['proveedore' => $proveedor->id]) }}"
@@ -72,6 +104,7 @@
                             </form>
                         </div>
                     </td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>
@@ -109,6 +142,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Mostrar SweetAlert de éxito si hay mensaje en sesión (con botón Aceptar)
+    const successMessage = @json(session('success'));
+    if (successMessage) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: successMessage,
+            confirmButtonText: 'Aceptar',
+            allowOutsideClick: false
+        });
+    }
 });
 </script>
 @endpush
