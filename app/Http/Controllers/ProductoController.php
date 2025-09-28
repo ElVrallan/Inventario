@@ -125,8 +125,10 @@ public function search(Request $request)
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
             'cantidad' => 'required|integer',
-            'imagen_principal' => 'nullable|image|max:2048',
-            'galeria.*' => 'nullable|image|max:2048',
+            // permitir imágenes y mp4 para imagen principal (hasta 50MB)
+            'imagen_principal' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
+            // galeria[] permite múltiples imágenes/videos (cada uno hasta 50MB)
+            'galeria.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
         ]);
 
         $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');
@@ -181,8 +183,8 @@ public function search(Request $request)
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
             'cantidad' => 'required|integer',
-            'imagen_principal' => 'nullable|image|max:2048',
-            'galeria.*' => 'nullable|image|max:2048',
+            'imagen_principal' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
+            'galeria.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
         ]);
 
         $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');

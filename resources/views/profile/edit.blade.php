@@ -55,8 +55,8 @@
                 }).then(result => {
                     if (result.isConfirmed) form.submit();
                 });
-            });
-        }
+            }); // <-- CORRECCIÓN: cerrar addEventListener correctamente
+        } // <-- CORRECCIÓN: cerrar el if de updatePasswordForm
 
         const deleteUserForm = document.getElementById("delete-user-form")
             || document.querySelector('form[action*="profile.destroy"]')
@@ -85,6 +85,59 @@
         @elseif (session('status') === 'password-updated')
             Swal.fire("¡Contraseña actualizada!", "Tu contraseña se cambió correctamente.", "success");
         @endif
+
+        // --- Mostrar errores de validación de contraseña en SweetAlert ---
+        (function() {
+            // Traer todos los mensajes de error desde el servidor
+            const validationErrors = @json($errors->getMessages() ?? []);
+
+            // Campos relacionados con el cambio de contraseña
+            const pwFields = ['current_password', 'password', 'password_confirmation'];
+            const pwMessages = [];
+
+            pwFields.forEach(function(field) {
+                if (validationErrors[field] && validationErrors[field].length) {
+                    validationErrors[field].forEach(function(msg) {
+                        pwMessages.push(msg);
+                    });
+                }
+            });
+
+            // Traduce frases comunes en inglés a español
+            function translateMessage(msg) {
+                if (!msg) return msg;
+                let s = msg;
+
+                // Traducciones directas / variantes comunes
+                s = s.replace(/The provided password does not match our records\./i, 'La contraseña actual no coincide con nuestros registros.');
+                s = s.replace(/The current password is incorrect\./i, 'La contraseña actual es incorrecta.');
+                s = s.replace(/The password is incorrect\./i, 'La contraseña es incorrecta.');
+                s = s.replace(/The password confirmation does not match\./i, 'La confirmación de la contraseña no coincide.');
+                s = s.replace(/The password field confirmation does not match\./i, 'La confirmación de la contraseña no coincide.');
+                s = s.replace(/The password must be at least (\d+) characters\./i, 'La contraseña debe tener al menos $1 caracteres.');
+                s = s.replace(/The password field must be at least (\d+) characters\./i, 'La contraseña debe tener al menos $1 caracteres.');
+
+                // Frases más genéricas
+                s = s.replace(/confirmation does not match/i, 'La confirmación no coincide.');
+                s = s.replace(/must be at least (\d+) characters/i, 'debe tener al menos $1 caracteres');
+
+                return s;
+            }
+
+            if (pwMessages.length) {
+                // Formatear en HTML (cada mensaje en su línea) y traducirlos
+                const html = pwMessages
+                    .map(m => `<div style="text-align:left;margin-bottom:6px;">${translateMessage(m)}</div>`)
+                    .join('');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al cambiar la contraseña',
+                    html: html,
+                    confirmButtonText: 'Cerrar'
+                });
+            }
+        })();
+        // --- fin errores de contraseña ---
     });
     </script>
 </x-app-layout>

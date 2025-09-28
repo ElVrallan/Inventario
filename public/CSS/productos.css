@@ -210,3 +210,47 @@
 #search-preview ul li:hover {
     background: #f3f4f6; /* gris claro Tailwind */
 }
+
+/* Botón flotante abajo-derecha */
+.floating-add-btn {
+    position: fixed;
+    right: 1.25rem; /* 20px */
+    bottom: 1.25rem; /* 20px */
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3b82f6; /* azul */
+    color: #ffffff;
+    border-radius: 9999px;
+    box-shadow: 0 8px 20px rgba(59,130,246,0.2);
+    z-index: 1000;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    text-decoration: none;
+}
+
+/* Hover / active */
+.floating-add-btn:hover {
+    transform: translateY(-4px);
+    background-color: #2563eb;
+    box-shadow: 0 12px 30px rgba(37,99,235,0.2);
+}
+
+/* Focus accesible */
+.floating-add-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+}
+
+/* Ajustar tamaño del SVG dentro */
+.floating-add-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* Evitar que se solape con otros elementos con posicion fixed */
+@media (min-width: 768px) {
+    /* si hay otro botón fijo grande, podrías ajustar right/bottom aquí */
+}
