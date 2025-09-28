@@ -252,10 +252,59 @@ public function search(Request $request)
                     ->where('id', $principalId)
                     ->first();
                 if ($img) {
-                    // Actualizar principal en productos y quitarla de la tabla producto_imagenes
-                    $producto->imagen_principal = $img->ruta;
-                    $producto->save();
-                    $img->delete(); // no borramos el archivo físico, solo el registro de galería
+                    // Si ya existía una imagen principal, intercambiamos los nombres de archivo
+                    // para que la nueva imagen principal ocupe el nombre de la anterior
+                    // y la anterior pase a la galería sin eliminarse.
+                    if ($producto->imagen_principal) {
+                        $oldRuta = $producto->imagen_principal; // e.g. productos/{id}_1.jpg
+                        $newRuta = $img->ruta; // e.g. productos/{id}_3.jpg
+
+                        try {
+                            // Generar ruta temporal para evitar colisiones
+                            $tempRuta = 'productos/.swap_' . time() . '_' . uniqid() . '.tmp';
+
+                            // Mover archivos: old -> temp, new -> old, temp -> new
+                            if (Storage::disk('public')->exists($oldRuta)) {
+                                Storage::disk('public')->move($oldRuta, $tempRuta);
+                            } else {
+                                // Si por alguna razón no existe el anterior, simplemente move new -> oldRuta
+                                // (pero seguimos creando temp placeholder to keep logic simple)
+                                // no-op for old
+                            }
+
+                            if (Storage::disk('public')->exists($newRuta)) {
+                                Storage::disk('public')->move($newRuta, $oldRuta);
+                            } else {
+                                \Log::warning('[ProductoController@update] Nueva ruta de galería no existe en disco', ['ruta' => $newRuta]);
+                            }
+
+                            if (Storage::disk('public')->exists($tempRuta)) {
+                                Storage::disk('public')->move($tempRuta, $newRuta);
+                            }
+
+                            // Después del intercambio de archivos, mantenemos el nombre de la imagen principal
+                            // apuntando al mismo path ($oldRuta) porque ahora contiene la nueva imagen.
+                            // No borramos ni eliminamos el registro de la galería; el registro sigue apuntando a $newRuta
+                            // que ahora contiene la antigua imagen principal.
+                            $producto->imagen_principal = $oldRuta;
+                            $producto->save();
+
+                        } catch (\Exception $e) {
+                            \Log::error('[ProductoController@update] Error al intercambiar archivos de galería/principal', [
+                                'producto_id' => $producto->id,
+                                'oldRuta' => $oldRuta,
+                                'newRuta' => $newRuta,
+                                'error' => $e->getMessage(),
+                            ]);
+                            // No abortamos la petición completa; al menos informamos en logs.
+                        }
+                    } else {
+                        // No había imagen principal: promovemos la imagen seleccionada a principal
+                        $producto->imagen_principal = $img->ruta;
+                        $producto->save();
+                        // Eliminamos el registro de galería porque ahora es la principal
+                        $img->delete(); // no borramos el archivo físico
+                    }
                 }
             }
         }
