@@ -6,7 +6,7 @@
             <li class="p-2 hover:bg-gray-100 flex items-center gap-3 cursor-pointer"
                 onclick="window.location='{{ route('productos.show', $producto->id) }}'">
                 {{-- Imagen pequeña --}}
-                <img src="{{ asset('storage/'.$producto->imagen_principal) }}" 
+             <img src="{{ $producto->imagen_principal ? asset('storage/'.$producto->imagen_principal) : 'https://via.placeholder.com/48x48?text=No+Img' }}" 
                      alt="{{ $producto->nombre }}" 
                      class="w-12 h-12 object-cover rounded">
 

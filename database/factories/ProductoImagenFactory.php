@@ -14,7 +14,8 @@ class ProductoImagenFactory extends Factory
     {
         return [
             'producto_id' => Producto::factory(),
-            'ruta_imagen' => $this->faker->imageUrl(640, 480, 'products', true),
+            'ruta' => $this->faker->imageUrl(640, 480, 'products', true),
+            'es_principal' => false,
         ];
     }
 }

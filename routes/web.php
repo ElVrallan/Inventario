@@ -9,6 +9,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
+// Asegurar que {producto} sea numérico para evitar que 'create' coincida con productos/{producto}
+Route::pattern('producto', '[0-9]+');
+
 Route::middleware(['auth', 'role:vendedor,admin'])->group(function() {
     Route::post('productos/{producto}/vender', [VentaController::class, 'store'])->name('productos.vender');
 });
@@ -54,6 +57,9 @@ Route::middleware(['auth', 'role:admin,vendedor'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // Acceso completo a gestión de productos para admin
     Route::resource('productos', ProductoController::class)->except(['index', 'show']);
+    
+    // Ruta específica para eliminar imágenes individuales
+    Route::delete('productos/images/{imagen}', [ProductoController::class, 'deleteImage'])->name('productos.delete-image');
     
     // Gestión completa de categorías
     Route::resource('categorias', CategoriaController::class)->except(['index']);

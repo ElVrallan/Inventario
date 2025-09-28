@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\ProductoImagen;
+use App\Models\Categoria;
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -112,7 +114,9 @@ public function search(Request $request)
      */
     public function create()
     {
-        return view('productos.create');
+        $categorias = Categoria::orderBy('nombre')->get();
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        return view('productos.create', compact('categorias', 'proveedores'));
     }
 
     /**
@@ -120,36 +124,81 @@ public function search(Request $request)
      */
     public function store(Request $request)
     {
+        \Log::info('[ProductoController@store] Upload debug start', [
+            'has_galeria' => $request->hasFile('galeria'),
+            'galeria_count' => $request->hasFile('galeria') ? count($request->file('galeria')) : 0,
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+        ]);
+
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
             'cantidad' => 'required|integer',
-            // permitir imágenes y mp4 para imagen principal (hasta 50MB)
-            'imagen_principal' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
+            'categoria_id' => 'nullable|exists:categorias,id',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
             // galeria[] permite múltiples imágenes/videos (cada uno hasta 50MB)
-            'galeria.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
+            'galeria.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,mp4|max:51200',
+            // id (índice) del archivo de galeria que será principal
+            'galeria_principal' => 'nullable|integer',
         ]);
 
-        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');
+        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad', 'categoria_id', 'proveedor_id');
         $data['creado_por'] = auth()->id();
-
-        // Imagen principal
-        if ($request->hasFile('imagen_principal')) {
-            $data['imagen_principal'] = $request->file('imagen_principal')->store('productos', 'public');
-        }
 
         $producto = Producto::create($data);
 
-        // Galería
+        // Galería y selección de principal (si no se elige, será la primera)
         if ($request->hasFile('galeria')) {
-            foreach ($request->file('galeria') as $img) {
-                $ruta = $img->store('productos', 'public');
-                ProductoImagen::create([
-                    'producto_id' => $producto->id,
-                    'ruta_imagen' => $ruta
-                ]);
+            $files = array_values($request->file('galeria'));
+            $principalIndex = $request->input('galeria_principal');
+
+            // Reordenar: principal primero si viene marcado
+            if ($principalIndex !== null && isset($files[(int)$principalIndex])) {
+                $principalFile = $files[(int)$principalIndex];
+                unset($files[(int)$principalIndex]);
+                array_unshift($files, $principalFile);
             }
+
+            $seq = 1; // nuevo producto empieza en 1
+            foreach ($files as $idx => $file) {
+                $ext = strtolower($file->getClientOriginalExtension() ?: '');
+                if ($ext === '') {
+                    // fallback simple por mime
+                    $mime = $file->getMimeType();
+                    $ext = $mime === 'video/mp4' ? 'mp4' : 'jpg';
+                }
+                $filename = $producto->id . '_' . $seq . '.' . $ext;
+                $ruta = 'productos/' . $filename;
+                // Guardar con nombre determinístico
+                try {
+                    $file->storeAs('productos', $filename, 'public');
+                } catch (\Throwable $e) {
+                    \Log::error('[ProductoController@store] Error al guardar archivo', [
+                        'file' => $filename,
+                        'error' => $e->getMessage(),
+                    ]);
+                    continue; // saltar este archivo para no romper toda la transacción
+                }
+
+                // El primer archivo es la imagen principal: NO se guarda en producto_imagenes
+                if ($idx === 0) {
+                    $producto->imagen_principal = $ruta;
+                } else {
+                    // El resto va a la galería
+                    ProductoImagen::create([
+                        'producto_id' => $producto->id,
+                        'ruta' => $ruta,
+                        'es_principal' => false,
+                    ]);
+                }
+                $seq++;
+            }
+
+            $producto->save();
+        } else {
+            \Log::warning('[ProductoController@store] No se recibieron archivos en galeria');
         }
 
         return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
@@ -170,7 +219,9 @@ public function search(Request $request)
     public function edit(Producto $producto)
     {
         $producto->load('imagenes');
-        return view('productos.edit', compact('producto'));
+        $categorias = Categoria::orderBy('nombre')->get();
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        return view('productos.edit', compact('producto', 'categorias', 'proveedores'));
     }
 
     /**
@@ -183,30 +234,70 @@ public function search(Request $request)
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
             'cantidad' => 'required|integer',
-            'imagen_principal' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
-            'galeria.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4|max:51200',
+            'categoria_id' => 'nullable|exists:categorias,id',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
+            'galeria.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,mp4|max:51200',
+            'galeria_principal' => 'nullable|integer',
         ]);
 
-        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad');
-
-        // Imagen principal
-        if ($request->hasFile('imagen_principal')) {
-            if ($producto->imagen_principal && Storage::disk('public')->exists($producto->imagen_principal)) {
-                Storage::disk('public')->delete($producto->imagen_principal);
-            }
-            $data['imagen_principal'] = $request->file('imagen_principal')->store('productos', 'public');
-        }
+        $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad', 'categoria_id', 'proveedor_id');
 
         $producto->update($data);
 
-        // Galería
+        // Si se quiere cambiar cuál de la galería es principal: mover esa imagen a principal
+        if ($request->filled('galeria_principal')) {
+            $principalId = $request->input('galeria_principal');
+            if (is_numeric($principalId)) {
+                $img = ProductoImagen::where('producto_id', $producto->id)
+                    ->where('id', $principalId)
+                    ->first();
+                if ($img) {
+                    // Actualizar principal en productos y quitarla de la tabla producto_imagenes
+                    $producto->imagen_principal = $img->ruta;
+                    $producto->save();
+                    $img->delete(); // no borramos el archivo físico, solo el registro de galería
+                }
+            }
+        }
+
+        // Agregar nuevos archivos a la galería con nombre consecutivo
         if ($request->hasFile('galeria')) {
-            foreach ($request->file('galeria') as $img) {
-                $ruta = $img->store('productos', 'public');
+            // Calcular siguiente secuencia revisando rutas existentes
+            $producto->load('imagenes');
+            $maxSeq = 0;
+            $extractSeq = function($ruta) {
+                // espera formato productos/{id}_{n}.ext
+                $base = basename($ruta);
+                $parts = explode('.', $base); // [id_n, ext]
+                $name = $parts[0] ?? '';
+                $underParts = explode('_', $name); // [id, n]
+                $n = isset($underParts[1]) ? (int)$underParts[1] : 0;
+                return $n;
+            };
+            if ($producto->imagen_principal) {
+                $maxSeq = max($maxSeq, $extractSeq($producto->imagen_principal));
+            }
+            foreach ($producto->imagenes as $img) {
+                $maxSeq = max($maxSeq, $extractSeq($img->ruta));
+            }
+
+            $seq = max(1, $maxSeq + 1);
+            foreach ($request->file('galeria') as $file) {
+                $ext = strtolower($file->getClientOriginalExtension() ?: '');
+                if ($ext === '') {
+                    $mime = $file->getMimeType();
+                    $ext = $mime === 'video/mp4' ? 'mp4' : 'jpg';
+                }
+                $filename = $producto->id . '_' . $seq . '.' . $ext;
+                $ruta = 'productos/' . $filename;
+                $file->storeAs('productos', $filename, 'public');
+
                 ProductoImagen::create([
                     'producto_id' => $producto->id,
-                    'ruta_imagen' => $ruta
+                    'ruta' => $ruta,
+                    'es_principal' => false,
                 ]);
+                $seq++;
             }
         }
 
@@ -229,8 +320,8 @@ public function search(Request $request)
 
         // Galería
         foreach ($producto->imagenes as $img) {
-            if (Storage::disk('public')->exists($img->ruta_imagen)) {
-                Storage::disk('public')->delete($img->ruta_imagen);
+            if (Storage::disk('public')->exists($img->ruta)) {
+                Storage::disk('public')->delete($img->ruta);
             }
             $img->delete();
         }
@@ -238,5 +329,52 @@ public function search(Request $request)
         $producto->delete();
 
         return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
+    }
+
+    /**
+     * Eliminar una imagen individual de la galería
+     */
+    public function deleteImage(ProductoImagen $imagen)
+    {
+        if (auth()->user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        try {
+            // Detectar si la imagen es la imagen_principal actual del producto
+            $producto = Producto::find($imagen->producto_id);
+            $wasPrincipal = false;
+            if ($producto && $producto->imagen_principal && $producto->imagen_principal === $imagen->ruta) {
+                $wasPrincipal = true;
+                // Limpiar la ruta principal en el producto
+                $producto->imagen_principal = null;
+                $producto->save();
+            }
+
+            // Eliminar archivo físico si existe
+            if (Storage::disk('public')->exists($imagen->ruta)) {
+                Storage::disk('public')->delete($imagen->ruta);
+            }
+
+            // Eliminar registro de la base de datos
+            $imagenId = $imagen->id;
+            $imagenRuta = $imagen->ruta;
+            $imagen->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Imagen eliminada correctamente',
+                'imagen_id' => $imagenId,
+                'ruta' => $imagenRuta,
+                'removed_principal' => $wasPrincipal,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[ProductoController@deleteImage] Error al eliminar imagen', [
+                'imagen_id' => $imagen->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return response()->json(['success' => false, 'message' => 'Error al eliminar la imagen'], 500);
+        }
     }
 }

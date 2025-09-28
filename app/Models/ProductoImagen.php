@@ -15,7 +15,8 @@ class ProductoImagen extends Model
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'producto_id',
-        'ruta_imagen',
+        'ruta',
+        'es_principal',
     ];
 
     /**

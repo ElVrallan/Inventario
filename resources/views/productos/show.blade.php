@@ -16,7 +16,12 @@
         @if($producto->imagenes->isNotEmpty())
         <div class="showproducto-gallery mt-2">
             @foreach($producto->imagenes as $img)
-            <img src="{{ asset('storage/'.$img->ruta_imagen) }}" alt="Galería {{ $producto->nombre }}">
+                @php $ext = pathinfo($img->ruta, PATHINFO_EXTENSION); @endphp
+                @if(strtolower($ext) === 'mp4')
+                    <video src="{{ asset('storage/'.$img->ruta) }}" controls></video>
+                @else
+                    <img src="{{ asset('storage/'.$img->ruta) }}" alt="Galería {{ $producto->nombre }}">
+                @endif
             @endforeach
         </div>
         @endif
