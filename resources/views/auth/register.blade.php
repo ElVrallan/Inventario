@@ -1,3 +1,4 @@
+<?php app()->setLocale('es'); ?>
 <div class="flex items-center justify-start mt-4">
     <a href="{{ url('/') }}" 
        class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">
