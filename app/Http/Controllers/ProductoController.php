@@ -147,7 +147,7 @@ public function search(Request $request)
                 $ruta = $img->store('productos', 'public');
                 ProductoImagen::create([
                     'producto_id' => $producto->id,
-                    'ruta' => $ruta
+                    'ruta_imagen' => $ruta
                 ]);
             }
         }
@@ -205,7 +205,7 @@ public function search(Request $request)
                 $ruta = $img->store('productos', 'public');
                 ProductoImagen::create([
                     'producto_id' => $producto->id,
-                    'ruta' => $ruta
+                    'ruta_imagen' => $ruta
                 ]);
             }
         }
@@ -229,17 +229,8 @@ public function search(Request $request)
 
         // Galería
         foreach ($producto->imagenes as $img) {
-            // Normalizar barras en la ruta antes de comprobar/eliminar
-            $ruta = $img->ruta ?? $img->ruta_imagen ?? null;
-            if ($ruta) {
-                $ruta = str_replace('\\', '/', $ruta);
-                // Si la ruta tiene prefijo 'storage/', lo quitamos porque Storage::disk('public') trabaja con paths relativos a storage/app/public
-                if (strpos($ruta, 'storage/') === 0) {
-                    $ruta = substr($ruta, strlen('storage/'));
-                }
-                if (Storage::disk('public')->exists($ruta)) {
-                    Storage::disk('public')->delete($ruta);
-                }
+            if (Storage::disk('public')->exists($img->ruta_imagen)) {
+                Storage::disk('public')->delete($img->ruta_imagen);
             }
             $img->delete();
         }
