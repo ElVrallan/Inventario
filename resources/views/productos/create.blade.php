@@ -18,7 +18,11 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Precio</label>
-                <input type="number" step="0.01" name="precio" value="{{ old('precio') }}" class="mt-1 border p-2 w-full rounded" required>
+                <!-- No permitir decimales: step=1, limpiar entrada para dejar solo dígitos y limitar max -->
+                <input type="number" step="1" name="precio" value="{{ old('precio') }}" class="mt-1 border p-2 w-full rounded" required
+                    max="99999999"
+                    oninput="if(this.value){ this.value = this.value.toString().replace(/[^0-9]/g,''); if(parseInt(this.value,10) > 99999999) this.value = '99999999'; }"
+                    title="Máximo permitido: 99.999.999">
                 @error('precio')
                     <p class="text-sm text-red-600">{{ $message }}</p>
                 @enderror

@@ -8,6 +8,7 @@ use App\Models\Categoria;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\QueryException;
 
 class ProductoController extends Controller
 {
@@ -26,84 +27,84 @@ class ProductoController extends Controller
     /**
      * Mostrar todos los productos
      */
-public function index(Request $request)
-{
-    $query = Producto::with('imagenes');
+    public function index(Request $request)
+    {
+        $query = Producto::with('imagenes');
 
-    if ($request->has('q') && $request->q != '') {
-        $search = $request->q;
-        $query->where(function($q) use ($search) {
-            $q->where('nombre', 'like', "%{$search}%")
-              ->orWhere('descripcion', 'like', "%{$search}%")
-              ->orWhere('precio', 'like', "%{$search}%")
-              ->orWhere('cantidad', 'like', "%{$search}%");
-        });
-    }
-
-    $productos = $query->orderBy('id', 'desc')->paginate(9);
-
-    // Si es AJAX, solo devolvemos las tarjetas
-    if ($request->ajax()) {
-        return view('productos.partials.productos_grid', compact('productos'))->render();
-    }
-
-    return view('productos.index', compact('productos'));
-}
-
-public function searchPreview(Request $request)
-{
-    $query = $request->get('q', '');
-
-    $productos = Producto::query()
-        ->where('id', 'like', "%{$query}%")
-        ->orWhere('nombre', 'like', "%{$query}%")
-        ->orWhere('descripcion', 'like', "%{$query}%")
-        ->orWhere('precio', 'like', "%{$query}%")
-        ->orWhere('cantidad', 'like', "%{$query}%")
-        ->orWhere('creado_por', 'like', "%{$query}%")
-        ->orWhere('categoria_id', 'like', "%{$query}%")
-        ->orWhere('proveedor_id', 'like', "%{$query}%")
-        ->limit(5)
-        ->get();
-
-    return view('productos.partials.search_preview', compact('productos'));
-}
-
-
-public function search(Request $request)
-{
-    $query = $request->input('q');
-    $user = auth()->user();
-
-    $productos = Producto::query()
-        ->when($query, function ($q) use ($query, $user) {
-            $q->where(function ($sub) use ($query, $user) {
-                $sub->where('id', 'like', "%{$query}%")
-                    ->orWhere('nombre', 'like', "%{$query}%")
-                    ->orWhere('descripcion', 'like', "%{$query}%")
-                    ->orWhere('precio', 'like', "%{$query}%");
-
-                if ($user && $user->rol === 'admin') {
-                    $sub->orWhereHas('proveedor', function ($proveedorQuery) use ($query) {
-                        $proveedorQuery->where('nombre', 'like', "%{$query}%");
-                    });
-                }
+        if ($request->has('q') && $request->q != '') {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('descripcion', 'like', "%{$search}%")
+                  ->orWhere('precio', 'like', "%{$search}%")
+                  ->orWhere('cantidad', 'like', "%{$search}%");
             });
-        })
-        ->distinct()
-        ->orderByRaw("
-            CASE
-                WHEN id LIKE ? THEN 1
-                WHEN nombre LIKE ? THEN 2
-                WHEN descripcion LIKE ? THEN 3
-                WHEN precio LIKE ? THEN 4
-                ELSE 5
-            END
-        ", ["%{$query}%", "%{$query}%", "%{$query}%", "%{$query}%"])
-        ->paginate(20);
+        }
 
-    return view('productos.search_results', compact('productos', 'query'));
-}
+        $productos = $query->orderBy('id', 'desc')->paginate(9);
+
+        // Si es AJAX, solo devolvemos las tarjetas
+        if ($request->ajax()) {
+            return view('productos.partials.productos_grid', compact('productos'))->render();
+        }
+
+        return view('productos.index', compact('productos'));
+    }
+
+    public function searchPreview(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        $productos = Producto::query()
+            ->where('id', 'like', "%{$query}%")
+            ->orWhere('nombre', 'like', "%{$query}%")
+            ->orWhere('descripcion', 'like', "%{$query}%")
+            ->orWhere('precio', 'like', "%{$query}%")
+            ->orWhere('cantidad', 'like', "%{$query}%")
+            ->orWhere('creado_por', 'like', "%{$query}%")
+            ->orWhere('categoria_id', 'like', "%{$query}%")
+            ->orWhere('proveedor_id', 'like', "%{$query}%")
+            ->limit(5)
+            ->get();
+
+        return view('productos.partials.search_preview', compact('productos'));
+    }
+
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $user = auth()->user();
+
+        $productos = Producto::query()
+            ->when($query, function ($q) use ($query, $user) {
+                $q->where(function ($sub) use ($query, $user) {
+                    $sub->where('id', 'like', "%{$query}%")
+                        ->orWhere('nombre', 'like', "%{$query}%")
+                        ->orWhere('descripcion', 'like', "%{$query}%")
+                        ->orWhere('precio', 'like', "%{$query}%");
+
+                    if ($user && $user->rol === 'admin') {
+                        $sub->orWhereHas('proveedor', function ($proveedorQuery) use ($query) {
+                            $proveedorQuery->where('nombre', 'like', "%{$query}%");
+                        });
+                    }
+                });
+            })
+            ->distinct()
+            ->orderByRaw("
+                CASE
+                    WHEN id LIKE ? THEN 1
+                    WHEN nombre LIKE ? THEN 2
+                    WHEN descripcion LIKE ? THEN 3
+                    WHEN precio LIKE ? THEN 4
+                    ELSE 5
+                END
+            ", ["%{$query}%", "%{$query}%", "%{$query}%", "%{$query}%"])
+            ->paginate(20);
+
+        return view('productos.search_results', compact('productos', 'query'));
+    }
 
 
 
@@ -134,7 +135,8 @@ public function search(Request $request)
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'precio' => 'required|numeric',
+            // precio must be integer (no decimals) and limited in size
+            'precio' => ['required','integer','min:0','max:99999999'],
             'cantidad' => 'required|integer',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
@@ -147,7 +149,22 @@ public function search(Request $request)
         $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad', 'categoria_id', 'proveedor_id');
         $data['creado_por'] = auth()->id();
 
-        $producto = Producto::create($data);
+        // Ensure precio is stored as integer (no decimals)
+        if (isset($data['precio'])) {
+            $data['precio'] = (int) $data['precio'];
+        }
+
+        try {
+            $producto = Producto::create($data);
+        } catch (QueryException $e) {
+            \Log::error('[ProductoController@store] DB error inserting producto', [
+                'error' => $e->getMessage(),
+                'data' => $data,
+            ]);
+            return back()
+                ->withInput()
+                ->withErrors(['precio' => 'El precio debe ser un número entero sin decimales y no puede ser tan grande.']);
+        }
 
         // Galería y selección de principal (si no se elige, será la primera)
         if ($request->hasFile('galeria')) {
@@ -232,7 +249,8 @@ public function search(Request $request)
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'precio' => 'required|numeric',
+            // enforce integer on update as well
+            'precio' => ['required','integer','min:0','max:99999999'],
             'cantidad' => 'required|integer',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
@@ -241,6 +259,11 @@ public function search(Request $request)
         ]);
 
         $data = $request->only('nombre', 'descripcion', 'precio', 'cantidad', 'categoria_id', 'proveedor_id');
+
+        // Force integer precio
+        if (isset($data['precio'])) {
+            $data['precio'] = (int) $data['precio'];
+        }
 
         $producto->update($data);
 

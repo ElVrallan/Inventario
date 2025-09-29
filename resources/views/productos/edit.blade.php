@@ -20,7 +20,7 @@
 
             <div>
                 <label class="block text-sm font-medium">Precio</label>
-                <input type="number" step="0.01" name="precio" value="{{ old('precio', $producto->precio) }}" class="mt-1 border p-2 w-full rounded" required>
+                <input type="number" step="1" name="precio" value="{{ old('precio', $producto->precio) }}" class="mt-1 border p-2 w-full rounded" required>
                 @error('precio')
                     <p class="text-sm text-red-600">{{ $message }}</p>
                 @enderror

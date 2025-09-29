@@ -24,6 +24,11 @@ class Producto extends Model
         'proveedor_id',
     ];
 
+    // Add or extend casts to ensure precio is treated as integer
+    protected $casts = [
+        'precio' => 'integer',
+    ];
+
     /**
      * Relación con el usuario que creó el producto
      */
