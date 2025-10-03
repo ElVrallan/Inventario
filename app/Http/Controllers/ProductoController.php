@@ -125,11 +125,26 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
+        // Calculate total file size safely
+        $totalFileSize = 0;
+        if (isset($_FILES)) {
+            foreach ($_FILES as $fileGroup) {
+                if (is_array($fileGroup['size'])) {
+                    $totalFileSize += array_sum($fileGroup['size']);
+                } else {
+                    $totalFileSize += $fileGroup['size'];
+                }
+            }
+        }
+
         \Log::info('[ProductoController@store] Upload debug start', [
             'has_galeria' => $request->hasFile('galeria'),
             'galeria_count' => $request->hasFile('galeria') ? count($request->file('galeria')) : 0,
             'upload_max_filesize' => ini_get('upload_max_filesize'),
             'post_max_size' => ini_get('post_max_size'),
+            'request_files' => $request->allFiles(),
+            'total_file_size' => $totalFileSize,
+            'post_size_estimate' => strlen(serialize($_POST)) + $totalFileSize,
         ]);
 
         $request->validate([
@@ -156,6 +171,7 @@ class ProductoController extends Controller
 
         try {
             $producto = Producto::create($data);
+            \Log::info('[ProductoController@store] Producto creado', ['producto_id' => $producto->id]);
         } catch (QueryException $e) {
             \Log::error('[ProductoController@store] DB error inserting producto', [
                 'error' => $e->getMessage(),
@@ -170,6 +186,11 @@ class ProductoController extends Controller
         if ($request->hasFile('galeria')) {
             $files = array_values($request->file('galeria'));
             $principalIndex = $request->input('galeria_principal');
+            
+            \Log::info('[ProductoController@store] Processing galeria files', [
+                'files_count' => count($files),
+                'principal_index' => $principalIndex,
+            ]);
 
             // Reordenar: principal primero si viene marcado
             if ($principalIndex !== null && isset($files[(int)$principalIndex])) {
@@ -180,6 +201,13 @@ class ProductoController extends Controller
 
             $seq = 1; // nuevo producto empieza en 1
             foreach ($files as $idx => $file) {
+                \Log::info('[ProductoController@store] Processing file', [
+                    'file_index' => $idx,
+                    'original_name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                ]);
+                
                 $ext = strtolower($file->getClientOriginalExtension() ?: '');
                 if ($ext === '') {
                     // fallback simple por mime
@@ -190,11 +218,17 @@ class ProductoController extends Controller
                 $ruta = 'productos/' . $filename;
                 // Guardar con nombre determinístico
                 try {
-                    $file->storeAs('productos', $filename, 'public');
+                    $result = $file->storeAs('productos', $filename, 'public');
+                    \Log::info('[ProductoController@store] File stored successfully', [
+                        'filename' => $filename,
+                        'stored_path' => $result,
+                        'full_path' => storage_path('app/public/' . $ruta),
+                    ]);
                 } catch (\Throwable $e) {
                     \Log::error('[ProductoController@store] Error al guardar archivo', [
                         'file' => $filename,
                         'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
                     ]);
                     continue; // saltar este archivo para no romper toda la transacción
                 }
@@ -202,18 +236,27 @@ class ProductoController extends Controller
                 // El primer archivo es la imagen principal: NO se guarda en producto_imagenes
                 if ($idx === 0) {
                     $producto->imagen_principal = $ruta;
+                    \Log::info('[ProductoController@store] Set principal image', ['ruta' => $ruta]);
                 } else {
                     // El resto va a la galería
-                    ProductoImagen::create([
+                    $productoImagen = ProductoImagen::create([
                         'producto_id' => $producto->id,
                         'ruta' => $ruta,
                         'es_principal' => false,
+                    ]);
+                    \Log::info('[ProductoController@store] Created gallery image', [
+                        'imagen_id' => $productoImagen->id,
+                        'ruta' => $ruta,
                     ]);
                 }
                 $seq++;
             }
 
             $producto->save();
+            \Log::info('[ProductoController@store] Product saved with images', [
+                'producto_id' => $producto->id,
+                'imagen_principal' => $producto->imagen_principal,
+            ]);
         } else {
             \Log::warning('[ProductoController@store] No se recibieron archivos en galeria');
         }
