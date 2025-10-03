@@ -46,6 +46,44 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Variables para detectar cambios
+    let initialValues = {};
+    let hasUnsavedChanges = false;
+    let isSubmitting = false;
+    
+    // Guardar valores iniciales de los selects
+    const selects = document.querySelectorAll('select[name^="roles"]');
+    selects.forEach(function(select) {
+        initialValues[select.name] = select.value;
+        
+        // Agregar event listener para detectar cambios
+        select.addEventListener('change', function() {
+            checkForChanges();
+        });
+    });
+    
+    // Función para verificar si hay cambios
+    function checkForChanges() {
+        hasUnsavedChanges = false;
+        selects.forEach(function(select) {
+            if (initialValues[select.name] !== select.value) {
+                hasUnsavedChanges = true;
+            }
+        });
+        
+        // Mostrar/ocultar botón de guardar según si hay cambios
+        const btnGuardar = document.getElementById('guardarCambiosBtn');
+        if (hasUnsavedChanges) {
+            btnGuardar.style.display = 'block';
+        } else {
+            btnGuardar.style.display = 'none';
+        }
+    }
+    
+    // Ocultar botón inicialmente
+    checkForChanges();
+    
+    // Evento para el botón guardar
     document.getElementById('guardarCambiosBtn').addEventListener('click', function() {
         Swal.fire({
             title: '¿Guardar cambios?',
@@ -56,9 +94,55 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
+                isSubmitting = true;
                 document.getElementById('rolesForm').submit();
             }
         });
+    });
+    
+    // Detectar intento de abandonar la página
+    window.addEventListener('beforeunload', function(event) {
+        if (hasUnsavedChanges && !isSubmitting) {
+            event.preventDefault();
+            event.returnValue = '¿Estás seguro de que quieres salir? Tienes cambios sin guardar.';
+            return event.returnValue;
+        }
+    });
+    
+    // Interceptar navegación con enlaces
+    document.addEventListener('click', function(event) {
+        const link = event.target.closest('a');
+        if (link && hasUnsavedChanges && !isSubmitting) {
+            event.preventDefault();
+            
+            Swal.fire({
+                title: 'Cambios sin guardar',
+                text: 'Tienes cambios sin guardar. ¿Qué deseas hacer?',
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: 'Guardar y continuar',
+                denyButtonText: 'Descartar cambios',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Guardar cambios y luego navegar
+                    isSubmitting = true;
+                    const form = document.getElementById('rolesForm');
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'redirect_to';
+                    hiddenInput.value = link.href;
+                    form.appendChild(hiddenInput);
+                    form.submit();
+                } else if (result.isDenied) {
+                    // Descartar cambios y navegar
+                    hasUnsavedChanges = false;
+                    window.location.href = link.href;
+                }
+                // Si cancela, no hace nada
+            });
+        }
     });
 
     @if(session('success'))

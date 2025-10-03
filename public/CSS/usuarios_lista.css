@@ -61,9 +61,11 @@
     padding: 15px 30px;
     font-size: 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    display: none; /* Oculto por defecto */
 }
 
 #guardarCambiosBtn:hover {
     background: #2779bd;
+    transform: scale(1.05);
 }

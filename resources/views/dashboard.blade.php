@@ -34,12 +34,12 @@
                 @endif
 
                 <!-- Reportes (solo admin) -->
-                @if(auth()->user()->rol === 'admin')
+                <!-- @if(auth()->user()->rol === 'admin')
                 <a href="{{ route('reportes.index') }}" class="dashboard-card p-6 bg-white border rounded-lg shadow hover:shadow-lg transition">
                     <h3 class="text-lg font-semibold mb-2">📊 Reportes</h3>
                     <p class="text-gray-600">Genera reportes y estadísticas.</p>
                 </a>
-                @endif
+                @endif -->
 
                 <!-- Usuarios (solo admin) -->
                 @if(auth()->user()->rol === 'admin')

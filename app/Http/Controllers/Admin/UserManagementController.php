@@ -48,6 +48,12 @@ class UserManagementController extends Controller
                 $usuario->save();
             }
         }
+        
+        // Si se envía una URL de redirección, redirigir allí
+        if ($request->has('redirect_to')) {
+            return redirect($request->input('redirect_to'))->with('success', 'Roles actualizados correctamente');
+        }
+        
         return back()->with('success', 'Roles actualizados correctamente');
     }
 
