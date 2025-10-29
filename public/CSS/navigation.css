@@ -1,0 +1,19 @@
+/* navigation.css */
+
+/* Botón “Volver” en navegación principal */
+.nav-back-link {
+    font-weight: bold;
+    color: #4f46e5; /* azul primario */
+    transition: color 0.2s;
+}
+
+.nav-back-link:hover {
+    color: #4338ca;
+}
+
+/* Ajuste de iconos o pequeños overrides si necesitas */
+.nav-icon {
+    vertical-align: middle;
+}
+
+/* Puedes agregar aquí cualquier otro override puntual sin tocar Tailwind */

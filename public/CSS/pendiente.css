@@ -1,0 +1,82 @@
+/* pendiente.css */
+
+/* Contenedor full screen centrado */
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.pendiente-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    width: 100%;
+    background-color: #f3f4f6;
+    padding: 1rem 2rem; /* menos padding para pantallas pequeñas */
+    box-sizing: border-box;
+}
+
+/* Título responsivo */
+.pendiente-container h1 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+/* Texto principal responsivo y ajustable */
+.pendiente-container p {
+    font-size: clamp(1rem, 3vw, 2rem);
+    color: #4b5563;
+    margin-bottom: 1rem;
+    max-width: 90%;
+    word-wrap: break-word;
+}
+
+/* Texto secundario más pequeño */
+.pendiente-container .text-sm {
+    font-size: clamp(0.8rem, 2vw, 1.2rem);
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+/* Botón grande y responsivo */
+.pendiente-container .logout-button {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    padding: 0.75rem 1.5rem;
+    background-color: #ef4444;
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    max-width: 90%;
+    text-align: center;
+}
+
+.pendiente-container .logout-button:hover {
+    background-color: #dc2626;
+}
+
+/* Ajustes extra para pantallas muy pequeñas */
+@media (max-height: 500px) {
+    .pendiente-container {
+        justify-content: flex-start;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .pendiente-container h1 {
+        font-size: clamp(1.5rem, 5vw, 3rem);
+    }
+
+    .pendiente-container p {
+        font-size: clamp(0.9rem, 2.5vw, 1.5rem);
+    }
+
+    .pendiente-container .logout-button {
+        font-size: clamp(0.9rem, 2vw, 1.2rem);
+    }
+}
