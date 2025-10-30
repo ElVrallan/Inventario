@@ -7,6 +7,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\MovimientoInventarioController;
 use Illuminate\Support\Facades\Route;
 
 // Asegurar que {producto} sea numérico para evitar que 'create' coincida con productos/{producto}
@@ -14,6 +15,13 @@ Route::pattern('producto', '[0-9]+');
 
 Route::middleware(['auth', 'role:vendedor,admin'])->group(function() {
     Route::post('productos/{producto}/vender', [VentaController::class, 'store'])->name('productos.vender');
+});
+
+// Rutas de movimientos de inventario (solo para admin)
+Route::middleware(['auth', 'role:admin'])->group(function() {
+    Route::get('/movimientos', [MovimientoInventarioController::class, 'index'])->name('movimientos.index');
+    Route::get('/movimientos/create', [MovimientoInventarioController::class, 'create'])->name('movimientos.create');
+    Route::post('/movimientos', [MovimientoInventarioController::class, 'store'])->name('movimientos.store');
 });
 
 // Ruta principal

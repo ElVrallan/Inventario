@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\ProductoImagen;
 use App\Models\Categoria;
 use App\Models\Proveedor;
+use App\Models\MovimientoInventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\QueryException;
@@ -171,6 +172,18 @@ class ProductoController extends Controller
 
         try {
             $producto = Producto::create($data);
+            
+            // Registrar entrada inicial del inventario
+            MovimientoInventario::create([
+                'fecha' => now(),
+                'tipo' => 'entrada',
+                'cantidad' => $data['cantidad'],
+                'producto_id' => $producto->id,
+                'producto_nombre' => $producto->nombre,
+                'user_id' => auth()->id(),
+                'referencia_documento' => 'Creación inicial del producto'
+            ]);
+
             \Log::info('[ProductoController@store] Producto creado', ['producto_id' => $producto->id]);
         } catch (QueryException $e) {
             \Log::error('[ProductoController@store] DB error inserting producto', [
@@ -310,7 +323,25 @@ class ProductoController extends Controller
             $data['precio'] = (int) $data['precio'];
         }
 
+        // Verificar si hay cambio en la cantidad
+        $oldCantidad = $producto->cantidad;
+        $newCantidad = $data['cantidad'];
+
         $producto->update($data);
+
+        // Registrar movimiento si hay cambio en la cantidad
+        if ($oldCantidad !== $newCantidad) {
+            $diferencia = $newCantidad - $oldCantidad;
+            MovimientoInventario::create([
+                'fecha' => now(),
+                'tipo' => $diferencia > 0 ? 'entrada' : 'salida',
+                'cantidad' => abs($diferencia),
+                'producto_id' => $producto->id,
+                'producto_nombre' => $producto->nombre,
+                'user_id' => auth()->id(),
+                'referencia_documento' => 'Ajuste manual de inventario'
+            ]);
+        }
 
         // Si se quiere cambiar cuál de la galería es principal: mover esa imagen a principal
         if ($request->filled('galeria_principal')) {
@@ -430,6 +461,19 @@ class ProductoController extends Controller
     {
         if (auth()->user()->rol !== 'admin') {
             abort(403);
+        }
+
+        // Registrar la eliminación como salida de inventario
+        if ($producto->cantidad > 0) {
+            MovimientoInventario::create([
+                'fecha' => now(),
+                'tipo' => 'salida',
+                'cantidad' => $producto->cantidad,
+                'producto_id' => $producto->id,
+                    'producto_nombre' => $producto->nombre,
+                'user_id' => auth()->id(),
+                'referencia_documento' => 'Eliminación total del producto'
+            ]);
         }
 
         // Imagen principal

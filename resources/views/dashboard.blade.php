@@ -41,6 +41,14 @@
                 </a>
                 @endif -->
 
+                <!-- Movimientos de Inventario (solo admin) -->
+                @if(auth()->user()->rol === 'admin')
+                <a href="{{ route('movimientos.index') }}" class="dashboard-card p-6 bg-white border rounded-lg shadow hover:shadow-lg transition">
+                    <h3 class="text-lg font-semibold mb-2">📋 Movimientos</h3>
+                    <p class="text-gray-600">Controla entradas y salidas del inventario.</p>
+                </a>
+                @endif
+
                 <!-- Usuarios (solo admin) -->
                 @if(auth()->user()->rol === 'admin')
                 <a href="{{ route('admin.usuarios.lista') }}" class="dashboard-card p-6 bg-white border rounded-lg shadow hover:shadow-lg transition">

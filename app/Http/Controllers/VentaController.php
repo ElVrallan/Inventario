@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Venta;
 use App\Models\Producto;
-use Illuminate\Database\QueryException; // <-- existing
-use Illuminate\Support\Facades\DB; // <-- added
+use App\Models\MovimientoInventario;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class VentaController extends Controller
 {
@@ -40,12 +41,23 @@ class VentaController extends Controller
             DB::transaction(function () use ($producto, $cantidad, $precioUnitario, $total, $MAX_TOTAL) {
                 // Si cabe en un solo registro, crearla directamente
                 if ($total <= $MAX_TOTAL) {
-                    Venta::create([
+                    $venta = Venta::create([
                         'producto_id' => $producto->id,
                         'user_id' => auth()->id(),
                         'cantidad' => $cantidad,
                         'precio_unitario' => $precioUnitario,
                         'total' => $total,
+                    ]);
+
+                    // Registrar la venta como una salida de inventario
+                    MovimientoInventario::create([
+                        'fecha' => now(),
+                        'tipo' => 'salida',
+                        'cantidad' => $cantidad,
+                        'producto_id' => $producto->id,
+                        'producto_nombre' => $producto->nombre,
+                        'user_id' => auth()->id(),
+                        'referencia_documento' => 'Venta #' . $venta->id
                     ]);
                 } else {
                     // Calcular cuántas unidades máximo por registro para no superar MAX_TOTAL
